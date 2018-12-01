@@ -5,13 +5,19 @@ const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
 const expressGraphQL = require('express-graphql');
 
-const User = require('./models/user');
+const schema = require('./schema');
+
+const { User, Conversation } = require('./models');
 
 const MONGO_URI = 'mongodb://nphung:password1@ds049558.mlab.com:49558/messenger';
 mongoose.connect(MONGO_URI);
 
 const app = express();
 
+app.use('/graphql', expressGraphQL({
+  schema,
+  graphiql: true
+}));
 app.use(morgan('combined'));
 app.use(bodyParser.json({ type: '*/*' }));
 

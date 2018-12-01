@@ -1,7 +1,9 @@
 const mongoose = require('mongoose');
 const bcrypt = require('bcrypt');
+const _ = require('lodash');
 
 const Conversation = require('./conversation');
+const Text = require('./text');
 
 const schema = new mongoose.Schema({
   name: String,
@@ -25,22 +27,35 @@ schema.pre('save', function(next) {
   });
 });
 
-schema.statics.findChats = function(id) {
-  return this.findById(id)
-    .populate('chats')
-    .then(res => res.chats);
+schema.statics.createChat = function(id, otherId) {
+  return Promise.all([this.findById(id), this.findById(otherId)])
+    .then(([me, other]) => {
+      const chat = new Conversation({ users: [me, other]});
+      me.chats.push(chat);
+      other.chats.push(chat);
+
+      return Promise.all([chat.save(), me.save(), other.save()])
+        .then(([chat, me, other]) => chat);
+    });
+};
+
+schema.statics.sendMessage = function(id, chatId, content) {
+  return this.findById(id).then(sender => {
+    // if (!sender.chats.includes(chatId)) throw new Error("Can't send a message to a stranger!");
+
+
+    // if (!idArr.includes(chatId)) throw new Error("Can't send a message to a stranger");
+
+    return Conversation.findById(chatId)
+      .then(chat => {
+        const text = new Text({ sender, content });
+        chat.texts.push(text);
+
+        return Promise.all([chat.save(), text.save()])
+          .then(([chat, text]) => text);
+      })
+  })
 }
 
-schema.methods.createChat = function(other, callback) {
-  const chat = new Conversation({ texts: [] });
-
-  chat.users.push(...[this, other]);
-  this.chats.push(chat);
-  other.chats.push(chat);
-
-  chat.save();
-  this.save();
-  other.save();
-}
 
 module.exports = mongoose.model('User', schema);
