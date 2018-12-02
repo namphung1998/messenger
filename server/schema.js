@@ -93,6 +93,12 @@ const TextType = new GraphQLObjectType({
 const RootQueryType = new GraphQLObjectType({
   name: 'RootQuery',
   fields: () => ({
+    me: {
+      type: UserType,
+      resolve(parentValue, args, req) {
+        return req.user;
+      }
+    },
     user: {
       type: UserType,
       args: { id: { type: new GraphQLNonNull(GraphQLID) } },
@@ -163,14 +169,15 @@ const mutation = new GraphQLObjectType({
       }
     },
     signin: {
-      type: UserType,
+      type: GraphQLString,
       args: {
         email: { type: GraphQLString },
         password: { type: GraphQLString }
       },
       resolve(parentValue, args, req) {
         const { email, password } = args;
-        return AuthService.signin({ email, password, req });
+        return AuthService.signin({ email, password, req })
+          .then(user => tokenForUser(user));
       }
     },
     signout: {
