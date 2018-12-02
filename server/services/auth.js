@@ -1,9 +1,6 @@
 const passport = require('passport');
 const LocalStrategy = require('passport-local').Strategy;
-const jwt = require('jwt-simple');
 const { User } = require('../models');
-
-const config = require('../config');
 
 const localOptions = { usernameField: 'email' };
 
@@ -16,11 +13,6 @@ passport.deserializeUser(function(id, done) {
     done(err, user);
   });
 });
-
-function tokenForUser(user) {
-  const timestamp = new Date().getTime();
-  return jwt.encode({ sub: user.id, iat: timestamp }, config.secret);
-}
 
 passport.use(new LocalStrategy(localOptions, function(email, password, done) {
   User.findOne({ email: email.toLowerCase() }, function(err, user) {

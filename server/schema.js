@@ -6,9 +6,33 @@ const {
   GraphQLID,
   GraphQLSchema
 } = require('graphql');
+const jwt = require('jwt-simple');
 
 const { User, Text, Conversation } = require('./models');
 const AuthService = require('./services/auth');
+
+const config = require('./config')
+
+function tokenForUser(user) {
+  const timestamp = new Date().getTime();
+  return jwt.encode({ sub: user.id, iat: timestamp }, config.secret);
+}
+
+function confirmUser(token) {
+  let decoded;
+
+  try {
+    decoded = jwt.decode(token, config.secret);
+  } catch (err) {
+    return Promise.resolve(false);
+  }
+
+  return User.findById(decoded.sub)
+    .then(user => {
+      if (!user) return false;
+      return true;
+    })
+}
 
 const UserType = new GraphQLObjectType({
   name: 'UserType',
@@ -97,11 +121,18 @@ const mutation = new GraphQLObjectType({
     createChat: {
       type: ConversationType,
       args: {
+        token: { type: GraphQLString },
         id: { type: new GraphQLNonNull(GraphQLID) },
         otherId: { type: new GraphQLNonNull(GraphQLID) }
       },
-      resolve(parentValue, { id, otherId }) {
-        return User.createChat(id, otherId);
+      resolve(parentValue, { token, id, otherId }) {
+        if (!token) throw new Error('Not authenticated');
+
+        return confirmUser(token).then(val => {
+          if (!val) throw new Error('Not authenticated')
+
+          return User.createChat(id, otherId);
+        });
       }
     },
     sendMessage: {
@@ -116,7 +147,7 @@ const mutation = new GraphQLObjectType({
       }
     },
     signup: {
-      type: UserType,
+      type: GraphQLString,
       args: {
         email: { type: GraphQLString },
         name: { type: GraphQLString },
@@ -125,7 +156,10 @@ const mutation = new GraphQLObjectType({
       resolve(parentValue, args, req) {
         const { email, name, password } = args;
 
-        return AuthService.signup({ email, password, name, req });
+        // console.log(typeof(AuthService.signup({ email, password, name, req })));
+
+        return AuthService.signup({ email, password, name, req })
+          .then(user => tokenForUser(user));
       }
     },
     signin: {

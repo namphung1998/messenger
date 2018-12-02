@@ -7,6 +7,8 @@ const cors = require('cors');
 const passport = require('passport');
 const session = require('express-session');
 const MongoStore = require('connect-mongo')(session);
+const jwt = require('jwt-simple');
+const config = require('./config');
 
 require('./services/auth');
 
