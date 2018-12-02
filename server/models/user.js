@@ -55,6 +55,12 @@ schema.statics.sendMessage = function(id, chatId, content) {
           .then(([chat, text]) => text);
       })
   })
+};
+
+schema.methods.comparePassword = function(candidatePassword, callback) {
+  bcrypt.compare(candidatePassword, this.password, function(err, same) {
+    callback(err, same);
+  })
 }
 
 

@@ -8,6 +8,7 @@ const {
 } = require('graphql');
 
 const { User, Text, Conversation } = require('./models');
+const AuthService = require('./services/auth');
 
 const UserType = new GraphQLObjectType({
   name: 'UserType',
@@ -77,7 +78,8 @@ const RootQueryType = new GraphQLObjectType({
     },
     users: {
       type: new GraphQLList(UserType),
-      resolve() {
+      resolve(parentValue, args, req) {
+        console.log(req.headers);
         return User.find({});
       }
     },
@@ -93,29 +95,6 @@ const RootQueryType = new GraphQLObjectType({
 const mutation = new GraphQLObjectType({
   name: 'mutation',
   fields: () => ({
-    createUser: {
-      type: UserType,
-      args: {
-        email: { type: GraphQLString },
-        name: { type: GraphQLString },
-        password: { type: GraphQLString }
-      },
-      resolve(parentValue, args) {
-        const { email, name, password } = args;
-
-        const user = new User({ email, name, password });
-
-        User.findOne({ email }, function(err, existingUser) {
-          if (err) throw err;
-
-          if (existingUser) throw new Error('Email in use');
-
-          
-          return user.save();
-        });
-        return user;
-      }
-    },
     createChat: {
       type: ConversationType,
       args: {
@@ -135,6 +114,39 @@ const mutation = new GraphQLObjectType({
       },
       resolve(parentValue, { user_id, chatId, content }) {
         return User.sendMessage(user_id, chatId, content);
+      }
+    },
+    signup: {
+      type: UserType,
+      args: {
+        email: { type: GraphQLString },
+        name: { type: GraphQLString },
+        password: { type: GraphQLString }
+      },
+      resolve(parentValue, args, req) {
+        const { email, name, password } = args;
+
+        return AuthService.signup({ email, password, name, req });
+      }
+    },
+    signin: {
+      type: UserType,
+      args: {
+        email: { type: GraphQLString },
+        password: { type: GraphQLString }
+      },
+      resolve(parentValue, args, req) {
+        const { email, password } = args;
+        return AuthService.signin({ email, password, req });
+      }
+    },
+    signout: {
+      type: UserType,
+      resolve(parentValue, args, req) {
+        const { user } = req;
+        console.log(req.user);
+        req.logout();
+        return user;
       }
     }
   })

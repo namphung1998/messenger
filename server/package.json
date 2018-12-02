@@ -12,11 +12,18 @@
   "dependencies": {
     "bcrypt": "^3.0.2",
     "body-parser": "^1.18.3",
+    "connect-mongo": "^2.0.2",
+    "cors": "^2.8.5",
     "express": "^4.16.4",
     "express-graphql": "^0.7.1",
+    "express-session": "^1.15.6",
     "graphql": "^14.0.2",
+    "jwt-simple": "^0.5.5",
     "lodash": "^4.17.11",
     "mongoose": "^5.3.13",
-    "morgan": "^1.9.1"
+    "morgan": "^1.9.1",
+    "passport": "^0.4.0",
+    "passport-jwt": "^4.0.0",
+    "passport-local": "^1.0.0"
   }
 }
