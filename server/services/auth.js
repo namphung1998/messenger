@@ -22,7 +22,7 @@ passport.use(new LocalStrategy(localOptions, function(email, password, done) {
 
     user.comparePassword(password, function(err, same) {
       if (err) return done(err);
-      if (!same) return done(null, false, 'Invalid credentials');
+      if (!same) return done(null, false, 'No credentials');
 
       return done(null, user);
     });

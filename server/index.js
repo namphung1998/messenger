@@ -7,14 +7,10 @@ const cors = require('cors');
 const passport = require('passport');
 const session = require('express-session');
 const MongoStore = require('connect-mongo')(session);
-const jwt = require('jwt-simple');
-const config = require('./config');
 
 require('./services/auth');
 
 const schema = require('./schema');
-
-const { User, Conversation, Text } = require('./models');
 
 const MONGO_URI = 'mongodb://nphung:password1@ds049558.mlab.com:49558/messenger';
 mongoose.Promise = global.Promise;
@@ -26,7 +22,10 @@ mongoose.connection
 
 const app = express();
 
-app.use(cors());
+app.use(cors({
+  credentials: true,
+  origin: 'http://localhost:3000'
+}));
 app.use(session({
   resave: true,
   saveUninitialized: true,

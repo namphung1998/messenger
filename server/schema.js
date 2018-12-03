@@ -99,6 +99,14 @@ const RootQueryType = new GraphQLObjectType({
         return req.user;
       }
     },
+    userByName: {
+      type: UserType,
+      args: { name: { type: GraphQLString }},
+      resolve(parentValue, { name }) {
+        return User.findOne({ name })
+          .catch(err => { throw err });
+      }
+    },
     user: {
       type: UserType,
       args: { id: { type: new GraphQLNonNull(GraphQLID) } },
@@ -162,10 +170,11 @@ const mutation = new GraphQLObjectType({
       resolve(parentValue, args, req) {
         const { email, name, password } = args;
 
-        // console.log(typeof(AuthService.signup({ email, password, name, req })));
-
         return AuthService.signup({ email, password, name, req })
-          .then(user => tokenForUser(user));
+          .then(user => {
+            console.log(req);
+            return tokenForUser(user)
+          });
       }
     },
     signin: {
@@ -175,16 +184,20 @@ const mutation = new GraphQLObjectType({
         password: { type: GraphQLString }
       },
       resolve(parentValue, args, req) {
+        console.log(req);
         const { email, password } = args;
         return AuthService.signin({ email, password, req })
-          .then(user => tokenForUser(user));
+          .then(user => {
+            console.log(req.user);
+            return tokenForUser(user)
+          });
       }
     },
     signout: {
       type: UserType,
       resolve(parentValue, args, req) {
-        const { user } = req;
         console.log(req.user);
+        const { user } = req;
         req.logout();
         return user;
       }

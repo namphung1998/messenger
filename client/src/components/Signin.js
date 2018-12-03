@@ -24,8 +24,9 @@ class Signin extends Component {
       }
     })
     .then(({ data }) => {
-      localStorage.setItem('token', data.signup);
-      this.props.history.push('/');
+      console.log(data);
+      localStorage.setItem('token', data.signin);
+      this.props.history.push('/userList');
     })
     .catch(res => {
       const errors = res.graphQLErrors.map(error => error.message);

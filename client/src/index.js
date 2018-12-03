@@ -10,9 +10,12 @@ import UserList from './components/UserList';
 import Welcome from './components/Welcome';
 import Signin from './components/Signin';
 import Signup from './components/Signup';
+import TestComponent from './components/TestComponent';
+import ChatCreate from './components/ChatCreate';
 
 const client = new ApolloClient({
-  uri: 'http://localhost:4000/graphql'
+  uri: 'http://localhost:4000/graphql',
+  credentials: 'include'
 })
 
 
@@ -24,6 +27,9 @@ ReactDOM.render(
         <Route path='/' exact component={Welcome}/>
         <Route path='/signin' component={Signin}/>
         <Route path='/signup' component={Signup}/>
+        <Route path='/userList' component={UserList}/>
+        <Route path='/test' component={TestComponent}/>
+        <Route path='/newChat' component={ChatCreate}/>
       </App>
     </BrowserRouter>
   </ApolloProvider>,
